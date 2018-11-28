@@ -1,0 +1,28 @@
+<?php
+$parents = null;
+$object  = null;
+
+function flat_collection_navigation_preprocess_islandora_default(&$variables) {
+
+    global $parents;
+    global $object;
+
+    $parents = isset($variables['parent_collections']) && is_array($variables['parent_collections']) ? $variables['parent_collections'] : [];
+    $object  = $variables['islandora_object'];
+}
+
+function flat_collection_navigation_preprocess_page(&$variables) {
+
+    global $parents;
+    global $object;
+
+    if (null !== $parents) {
+
+        module_load_include('inc', 'flat_collection_navigation', 'includes/NavigationLinksGenerator');
+
+        $generator       = NavigationLinksGenerator::create($parents);
+        $navigationLinks = $generator->generate($object->id);
+
+        $variables['title_suffix']['#markup'] = '<div style="margin-bottom: 10px; ">' . implode(' | ', $navigationLinks) . '</div>';
+    }
+}

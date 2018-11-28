@@ -1,0 +1,6 @@
+name = "Flat Collection Navigation"
+description = "A Flat module that allows you to navigate between items inside collection"
+dependencies[] = islandora
+package = FLAT
+core = 7.x
+version = 7.x-dev
