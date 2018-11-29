@@ -28,7 +28,7 @@ class NavigationLinksGenerator
     public function getSiblings(): array
     {
         $siblings = [];
-        $objects  = islandora_basic_collection_get_member_objects($this->object);
+        $objects  = islandora_basic_collection_get_member_objects($this->object, 0, 20, 'view', 'islandora:sp_cmdiCModel');
 
         if (is_array($objects) && isset($objects[1])) {
 
