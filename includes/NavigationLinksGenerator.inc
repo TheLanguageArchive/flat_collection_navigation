@@ -11,19 +11,13 @@ class NavigationLinksGenerator
     private $object;
 
     /**
-     * @var FedoraRepository
-     */
-    private $repository;
-
-    /**
      * Constructor
      *
      * @param AbstractObject $object
      */
     public function __construct(AbstractObject $object)
     {
-        $this->object     = $object;
-        $this->repository = islandora_get_tuque_connection()->repository;
+        $this->object = $object;
     }
 
     /**
@@ -33,28 +27,15 @@ class NavigationLinksGenerator
      */
     public function getSiblings(): array
     {
-        $query = '
-            select ?object from <#ri> WHERE
-            {
-                {
-                    ?object <fedora-rels-ext:isMemberOfCollection> <info:fedora/' . $this->object->id . '>
-                }
-                ?object <fedora-model:hasModel> <info:fedora/islandora:sp_cmdiCModel> .
-                ?object <fedora-model:state> <info:fedora/fedora-system:def/model#Active>
-            }
-        ';
-
         $siblings = [];
+        $objects  = islandora_basic_collection_get_member_objects($this->object);
 
-        try {
+        if (is_array($objects) && isset($objects[1])) {
 
-            $objects  = $this->repository->ri->sparqlQuery($query, 10);
-
-            foreach ($objects as $object) {
+            foreach ($objects[1] as $object) {
                 $siblings[] = $object['object']['value'];
             }
-
-        } catch (RepositoryException $e) {}
+        }
 
         return $siblings;
     }
@@ -62,17 +43,17 @@ class NavigationLinksGenerator
     /**
      * Generating navigation links
      *
-     * @return array
+     * @return array|false
      */
-    public function generate($current): array
+    public function generate($current)
     {
         $siblings = $this->getSiblings();
         $position = array_search($current, $siblings);
         $previous = false;
         $next     = false;
 
-        if (count($siblings) === 0 || false === $position) {
-            return [];
+        if (count($siblings) < 2 || false === $position) {
+            return false;
         }
 
         while (key($siblings) !== $position) {
