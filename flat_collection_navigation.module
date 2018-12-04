@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Hook into page preprocess to add
  * navigation links to title suffix

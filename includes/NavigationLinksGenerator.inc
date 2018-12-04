@@ -61,17 +61,18 @@ class NavigationLinksGenerator
      */
     public function parent($pid)
     {
-        $data = $this->query('PID:"' . $pid . '"');
+        $field = variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms');
+        $data  = $this->query('PID:"' . $pid . '"', ['fl' => [$field]]);
 
         if ($data['response']['numFound'] === 0) {
             return false;
         }
 
-        if (!isset($data['response']['docs'][0]['RELS_EXT_isMemberOfCollection_uri_ms']) || count($data['response']['docs'][0]['RELS_EXT_isMemberOfCollection_uri_ms']) === 0) {
+        if (!isset($data['response']['docs'][0][$field]) || count($data['response']['docs'][0][$field]) === 0) {
             return false;
         }
 
-        return explode('/', $data['response']['docs'][0]['RELS_EXT_isMemberOfCollection_uri_ms'][0])[1];
+        return explode('/', $data['response']['docs'][0][$field][0])[1];
     }
 
     /**
@@ -82,6 +83,42 @@ class NavigationLinksGenerator
      * @return array
      */
     public function children($parent)
+    {
+        $data     = $this->query($this->childrenQuery($parent), $this->childrenParams($parent));
+        $children = [];
+
+        foreach ($data['response']['docs'] as $doc) {
+            $children[] = $doc['PID'];
+        }
+
+        return $children;
+    }
+
+    /**
+     * Children query
+     *
+     * @param string $parent
+     *
+     * @return string
+     */
+    public function childrenQuery($parent)
+    {
+        return format_string('!member_field:("info:fedora/!pid" OR "!pid") OR !collection_member_field:("info:fedora/!pid" OR "!pid")', [
+
+            '!pid'                     => $parent,
+            '!member_field'            => variable_get('islandora_solr_member_of_field', 'RELS_EXT_isMemberOf_uri_ms'),
+            '!collection_member_field' => variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms'),
+        ]);
+    }
+
+    /**
+     * Building children params
+     *
+     * @param string $parent
+     *
+     * @return array
+     */
+    public function childrenParams($parent)
     {
         global $user;
 
@@ -100,23 +137,11 @@ class NavigationLinksGenerator
             $params['fq'][] = 'OR RELS_EXT_isViewableByRole_literal_ms:"' . $role . '"';
         }
 
-        $params['fq'] = implode(' ', $params['fq']);
-        $query        = format_string('!member_field:("info:fedora/!pid" OR "!pid") OR !collection_member_field:("info:fedora/!pid" OR "!pid")', [
+        $params['fl'][] = 'PID';
+        $params['fq']   = implode(' ', $params['fq']);
+        $params['sort'] = variable_get('islandora_solr_object_label_field', 'fgs_label_s') . ' asc';
 
-            '!pid'                     => $parent,
-            '!member_field'            => variable_get('islandora_solr_member_of_field', 'RELS_EXT_isMemberOf_uri_ms'),
-            '!collection_member_field' => variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms'),
-        ]);
-
-        $data = $this->query($query, $params);
-
-        $children = [];
-
-        foreach ($data['response']['docs'] as $doc) {
-            $children[] = $doc['PID'];
-        }
-
-        return $children;
+        return $params;
     }
 
     /**
