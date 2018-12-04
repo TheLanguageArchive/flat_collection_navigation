@@ -1,22 +1,24 @@
 <?php
 
+/**
+ * Hook into page preprocess to add
+ * navigation links to title suffix
+ *
+ * @param array $variables
+ *
+ * @return void
+ */
 function flat_collection_navigation_preprocess_page(&$variables) {
 
     if (arg(0) === 'islandora') {
 
         module_load_include('inc', 'flat_collection_navigation', 'includes/NavigationLinksGenerator');
 
-        $object  = menu_get_object('islandora_object', 2);
-        $parents = islandora_get_parents_from_rels_ext($object);
+        $generator       = new NavigationLinksGenerator();
+        $navigationLinks = $generator->generate(arg(2));
 
-        if (count($parents) > 0) {
-
-            $generator       = NavigationLinksGenerator::create($parents);
-            $navigationLinks = $generator->generate($object->id);
-
-            if (false !== $navigationLinks) {
-                $variables['title_suffix']['#markup'] = '<div style="margin-bottom: 10px; ">' . implode(' | ', $navigationLinks) . '</div>';
-            }
+        if (false !== $navigationLinks) {
+            $variables['title_suffix']['#markup'] = '<div style="margin-bottom: 10px; ">' . implode(' | ', $navigationLinks) . '</div>';
         }
     }
 }

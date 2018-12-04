@@ -6,70 +6,154 @@
 class NavigationLinksGenerator
 {
     /**
-     * @var AbstractObject
+     * @var Apache_Solr_Service
      */
-    private $object;
+    private $solr;
 
     /**
-     * Constructor
+     * Connect to apache solr
      *
-     * @param AbstractObject $object
+     * @return Apache_Solr_Service
      */
-    public function __construct(AbstractObject $object)
+    public function connect()
     {
-        $this->object = $object;
+        if (null !== $this->solr) {
+            return $this->solr;
+        }
+
+        $path_parts = parse_url(variable_get('islandora_solr_url', 'localhost:8080/solr'));
+
+        $this->solr = new Apache_Solr_Service($path_parts['host'], $path_parts['port'], $path_parts['path'] . '/');
+        $this->solr->setCreateDocuments(0);
+
+        return $this->solr;
     }
 
     /**
-     * Get sibling pids
+     * Common solr query performer
+     *
+     * @param string $query
+     * @param array $params
      *
      * @return array
      */
-    public function getSiblings(): array
+    public function query($query, $params = [])
     {
-        $siblings = [];
-        $objects  = islandora_basic_collection_get_member_objects($this->object, 0, 20, 'view', 'islandora:sp_cmdiCModel');
+        $this->connect();
 
-        if (is_array($objects) && isset($objects[1])) {
+        try {
+            $results = $this->solr->search($query, 0, 10, $params);
+        } catch (Exception $e) {
 
-            foreach ($objects[1] as $object) {
-                $siblings[] = $object['object']['value'];
-            }
+            drupal_set_message(check_plain(t('Error searching Solr index')) . ' ' . $e->getMessage(), 'error');
+            return false;
         }
 
-        return $siblings;
+        return json_decode($results->getRawResponse(), true);
+    }
+
+    /**
+     * Get parent pid from pid
+     *
+     * @param string $pid
+     *
+     * @return string
+     */
+    public function parent($pid)
+    {
+        $data = $this->query('PID:"' . $pid . '"');
+
+        if ($data['response']['numFound'] === 0) {
+            return false;
+        }
+
+        if (!isset($data['response']['docs'][0]['RELS_EXT_isMemberOfCollection_uri_ms']) || count($data['response']['docs'][0]['RELS_EXT_isMemberOfCollection_uri_ms']) === 0) {
+            return false;
+        }
+
+        return explode('/', $data['response']['docs'][0]['RELS_EXT_isMemberOfCollection_uri_ms'][0])[1];
+    }
+
+    /**
+     * Fetching children from parent
+     *
+     * @param string $parent
+     *
+     * @return array
+     */
+    public function children($parent)
+    {
+        global $user;
+
+        $params = [
+
+            'fq' => [
+
+                '-RELS_EXT_isConstituentOf_uri_mt:[* TO *]',
+                'RELS_EXT_isViewableByUser_literal_ms:"' . $user->name . '"',
+                'OR',
+                '((*:* -RELS_EXT_isViewableByUser_literal_ms:[* TO *]) AND (*:* -RELS_EXT_isViewableByRole_literal_ms:[* TO *]))',
+            ],
+        ];
+
+        foreach ($user->roles as $role) {
+            $params['fq'][] = 'OR RELS_EXT_isViewableByRole_literal_ms:"' . $role . '"';
+        }
+
+        $params['fq'] = implode(' ', $params['fq']);
+        $query        = format_string('!member_field:("info:fedora/!pid" OR "!pid") OR !collection_member_field:("info:fedora/!pid" OR "!pid")', [
+
+            '!pid'                     => $parent,
+            '!member_field'            => variable_get('islandora_solr_member_of_field', 'RELS_EXT_isMemberOf_uri_ms'),
+            '!collection_member_field' => variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms'),
+        ]);
+
+        $data = $this->query($query, $params);
+
+        $children = [];
+
+        foreach ($data['response']['docs'] as $doc) {
+            $children[] = $doc['PID'];
+        }
+
+        return $children;
     }
 
     /**
      * Generating navigation links
      *
+     * @param string $pid
+     *
      * @return array|false
      */
-    public function generate($current)
+    public function generate($pid)
     {
-        $siblings = $this->getSiblings();
-        $position = array_search($current, $siblings);
+        $parent   = $this->parent($pid);
+        $children = $this->children($parent);
+
+        $position = array_search($pid, $children);
         $previous = false;
         $next     = false;
 
-        if (count($siblings) < 2 || false === $position) {
+        if (count($children) < 2 || false === $position) {
             return false;
         }
 
-        while (key($siblings) !== $position) {
-            next($siblings);
+        while (key($children) !== $position) {
+            next($children);
         }
 
         if ($position > 0) {
 
-            $previous = prev($siblings);
-            next($siblings);
+            $previous = prev($children);
+            next($children);
         }
 
-        $next  = next($siblings);
+        $next  = next($children);
         $links = [];
 
         return [
+
             'previous' => $this->generateLink('Previous', $previous),
             'next'     => $this->generateLink('Next', $next),
         ];
@@ -86,23 +170,5 @@ class NavigationLinksGenerator
     public function generateLink(string $label, $pid = false): string
     {
         return (false === $pid ? $label : l($label, 'islandora/object/' . $pid));
-    }
-
-    /**
-     * Parents are saved in an array in $variables
-     * determine closest parent and return new instance
-     *
-     * @param array $parents
-     *
-     * @return NavigationLinks
-     * @throws \Exception
-     */
-    public static function create(array &$parents): self
-    {
-        if (count($parents) === 0) {
-            throw new \Exception('Could not find parent');
-        }
-
-        return new self($parents[0]);
     }
 }
