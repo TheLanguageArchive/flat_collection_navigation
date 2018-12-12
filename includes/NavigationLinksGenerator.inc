@@ -153,7 +153,12 @@ class NavigationLinksGenerator
      */
     public function generate($pid)
     {
-        $parent   = $this->parent($pid);
+        $parent = $this->parent($pid);
+
+        if (false === $parent) {
+            return false;
+        }
+
         $children = $this->children($parent);
 
         $position = array_search($pid, $children);

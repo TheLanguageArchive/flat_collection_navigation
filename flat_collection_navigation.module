@@ -9,7 +9,8 @@
  */
 function flat_collection_navigation_preprocess_page(&$variables) {
 
-    if (arg(0) === 'islandora') {
+    // arg(3) !== null means we are on the manage page
+    if (arg(0) === 'islandora' && arg(3) === null) {
 
         module_load_include('inc', 'flat_collection_navigation', 'includes/NavigationLinksGenerator');
 
