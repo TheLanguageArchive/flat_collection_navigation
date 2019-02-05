@@ -3,4 +3,4 @@ description = "A Flat module that allows you to navigate between items inside co
 dependencies[] = islandora
 package = FLAT
 core = 7.x
-version = 7.x-dev
+version = 7.x-0.1-dev

@@ -106,8 +106,8 @@ class NavigationLinksGenerator
         return format_string('!member_field:("info:fedora/!pid" OR "!pid") OR !collection_member_field:("info:fedora/!pid" OR "!pid")', [
 
             '!pid'                     => $parent,
-            '!member_field'            => variable_get('islandora_solr_member_of_field', 'RELS_EXT_isMemberOf_uri_ms'),
-            '!collection_member_field' => variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms'),
+            '!member_field'            => 'RELS_EXT_isMemberOf_uri_ms',
+            '!collection_member_field' => 'RELS_EXT_isMemberOfCollection_uri_ms',
         ]);
     }
 
@@ -168,6 +168,8 @@ class NavigationLinksGenerator
         if (count($children) < 2 || false === $position) {
             return false;
         }
+
+        reset($children);
 
         while (key($children) !== $position) {
             next($children);
