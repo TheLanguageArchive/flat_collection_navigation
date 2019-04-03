@@ -9,7 +9,7 @@
  */
 function flat_collection_navigation_preprocess_page(&$variables) {
 
-    // arg(3) !== null means we are on the manage page
+    // arg(3) === null means we are on the view page
     if (arg(0) === 'islandora' && arg(3) === null) {
 
         module_load_include('inc', 'flat_collection_navigation', 'includes/NavigationLinksGenerator');
@@ -18,7 +18,12 @@ function flat_collection_navigation_preprocess_page(&$variables) {
         $navigationLinks = $generator->generate(arg(2));
 
         if (false !== $navigationLinks) {
-            $variables['title_suffix']['#markup'] = '<div style="margin-bottom: 10px; ">' . implode(' | ', $navigationLinks) . '</div>';
+
+            if (!isset($variables['title_suffix']['#markup'])) {
+                $variables['title_suffix']['#markup'] = '';
+            }
+
+            $variables['title_suffix']['#markup'] = '<div style="margin-bottom: 10px; ">' . implode(' | ', $navigationLinks) . '</div>' . $variables['title_suffix']['#markup'];
         }
     }
 }
