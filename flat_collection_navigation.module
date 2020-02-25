@@ -23,7 +23,11 @@ function flat_collection_navigation_preprocess_page(&$variables) {
                 $variables['title_suffix']['#markup'] = '';
             }
 
-            $variables['title_suffix']['#markup'] = '<div class="collection-navigation-prev-next">' . implode(' | ', $navigationLinks) . '</div>' . $variables['title_suffix']['#markup'];
+            $variables['title_suffix']['#markup'] = '<div class="collection-navigation-prev-next">' . implode(' ', $navigationLinks) . '</div><div class="after-header"></div>' . $variables['title_suffix']['#markup'];
+        }
+
+        else {
+                $variables['title_suffix']['#markup'] = '<div class="collection-navigation-prev-next"></div><div class="after-header"></div>';
         }
     }
 }

@@ -153,6 +153,12 @@ class NavigationLinksGenerator
      */
     public function generate($pid)
     {
+        $root = variable_get('islandora_repository_pid', 'islandora:root');
+
+        if ($pid == $root) {
+                return false;
+        }
+
         $parent = $this->parent($pid);
 
         if (false === $parent) {
@@ -201,6 +207,11 @@ class NavigationLinksGenerator
      */
     public function generateLink(string $label, $pid = false): string
     {
-        return (false === $pid ? $label : l($label, 'islandora/object/' . $pid));
+        if ($pid) {
+            return l('', 'islandora/object/' . $pid, array('attributes' =>array('class'=>$label, 'title'=> $label . " item in the collection")));
+            }
+        else {
+            return '<span class="' . $label . '"></span>';
+        }
     }
 }
