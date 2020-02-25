@@ -61,7 +61,8 @@ class NavigationLinksGenerator
      */
     public function parent($pid)
     {
-        $field = variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms');
+        //$field = variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms');
+        $field = 'RELS_EXT_isMemberOfCollection_uri_ms';
         $data  = $this->query('PID:"' . $pid . '"', ['fl' => [$field]]);
 
         if ($data['response']['numFound'] === 0) {
