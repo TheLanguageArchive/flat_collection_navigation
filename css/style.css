@@ -1,24 +1,30 @@
 /* collection navigation styling */
+
+
 /* place collection navigation next to h1 page header */
-body.page-islandora .main-content-container .after-header {
-        margin-bottom: 20px;
+
+body.page-islandora .after-header {
+    margin-bottom: 20px;
 }
 
-body.page-islandora .main-content-container h1 {
-        display: table-cell;
-        width: 100%;
+body.page-islandora h1 {
+    display: table-cell;
+    width: 100%;
 }
+
+
 /* collection navigation button sytling */
+
 .collection-navigation-prev-next {
-        display: table-cell;
-        white-space: nowrap;
-        vertical-align: top;
-        border-bottom: 1px solid #dddddd;
+    display: table-cell;
+    white-space: nowrap;
+    vertical-align: top;
+    border-bottom: 1px solid #dddddd;
 }
 
 .collection-navigation-prev-next a {
-            text-decoration: none;
-    }
+    text-decoration: none;
+}
 
 .collection-navigation-prev-next a.Previous:before {
     font-family: "Font Awesome 5 Free";
@@ -27,7 +33,7 @@ body.page-islandora .main-content-container h1 {
     vertical-align: top;
     content: "\f191";
     text-decoration: none;
-    }
+}
 
 .collection-navigation-prev-next span.Previous:before {
     font-family: "Font Awesome 5 Free";
@@ -36,7 +42,7 @@ body.page-islandora .main-content-container h1 {
     vertical-align: top;
     content: "\f191";
     color: #cccccc;
-    }
+}
 
 .collection-navigation-prev-next a.Next:after {
     font-family: "Font Awesome 5 Free";
@@ -45,7 +51,7 @@ body.page-islandora .main-content-container h1 {
     vertical-align: top;
     content: "\f152";
     text-decoration: none;
-    }
+}
 
 .collection-navigation-prev-next span.Next:after {
     font-family: "Font Awesome 5 Free";
@@ -54,14 +60,14 @@ body.page-islandora .main-content-container h1 {
     vertical-align: top;
     content: "\f152";
     color: #cccccc;
-    }
+}
 
 .collection-navigation-prev-next a.Next:hover:after {
-        font-weight: 600;
-        text-decoration: none;
+    font-weight: 600;
+    text-decoration: none;
 }
 
 .collection-navigation-prev-next a.Previous:hover:before {
-        font-weight: 600;
-        text-decoration: none;
+    font-weight: 600;
+    text-decoration: none;
 }
