@@ -42,7 +42,7 @@ class NavigationLinksGenerator
         $this->connect();
 
         try {
-            $results = $this->solr->search($query, 0, 10, $params);
+            $results = $this->solr->search($query, 0, 1000, $params);
         } catch (Exception $e) {
 
             drupal_set_message(check_plain(t('Error searching Solr index')) . ' ' . $e->getMessage(), 'error');
