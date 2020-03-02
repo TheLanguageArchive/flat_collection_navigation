@@ -10,7 +10,9 @@
 function flat_collection_navigation_preprocess_page(&$variables) {
 
     // arg(3) === null means we are on the view page
-    if (arg(0) === 'islandora' && arg(3) === null) {
+    // if (arg(0) === 'islandora' && arg(3) === null) {
+    if (arg(0) === 'islandora') {
+
 
         module_load_include('inc', 'flat_collection_navigation', 'includes/NavigationLinksGenerator');
 
