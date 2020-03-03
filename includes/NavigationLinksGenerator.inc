@@ -63,7 +63,21 @@ class NavigationLinksGenerator
     {
         //$field = variable_get('islandora_solr_member_of_collection_field', 'RELS_EXT_isMemberOfCollection_uri_ms');
         $field = 'RELS_EXT_isMemberOfCollection_uri_ms';
-        $data  = $this->query('PID:"' . $pid . '"', ['fl' => [$field]]);
+        $solrParams = [];
+        // Restrict results based on specified namespaces.
+        $namespace_list = trim(variable_get('islandora_solr_namespace_restriction', ''));
+        if ($namespace_list) {
+           $namespaces = preg_split('/[,|\s]/', $namespace_list);
+           $namespace_array = array();
+           foreach (array_filter($namespaces) as $namespace) {
+              $namespace_array[] = "PID:$namespace\:*";
+           }
+           $solrParams['fq'][] = implode(' OR ', $namespace_array);
+        }
+
+        $solrParams['fl'][] = $field;
+
+        $data  = $this->query('PID:"' . $pid . '"', $solrParams);
 
         if ($data['response']['numFound'] === 0) {
             return false;
@@ -123,7 +137,7 @@ class NavigationLinksGenerator
     {
         global $user;
 
-        $params = [
+        $solrParams = [
 
             'fq' => [
 
@@ -134,15 +148,26 @@ class NavigationLinksGenerator
             ],
         ];
 
-        foreach ($user->roles as $role) {
-            $params['fq'][] = 'OR RELS_EXT_isViewableByRole_literal_ms:"' . $role . '"';
+        // Restrict results based on specified namespaces.
+        $namespace_list = trim(variable_get('islandora_solr_namespace_restriction', ''));
+        if ($namespace_list) {
+           $namespaces = preg_split('/[,|\s]/', $namespace_list);
+           $namespace_array = array();
+           foreach (array_filter($namespaces) as $namespace) {
+              $namespace_array[] = "PID:$namespace\:*";
+           }
+           $solrParams['fq'][] = 'AND ' . implode(' OR ', $namespace_array);
         }
 
-        $params['fl'][] = 'PID';
-        $params['fq']   = implode(' ', $params['fq']);
-        $params['sort'] = variable_get('islandora_solr_object_label_field', 'fgs_label_s') . ' asc';
+        foreach ($user->roles as $role) {
+            $solrParams['fq'][] = 'OR RELS_EXT_isViewableByRole_literal_ms:"' . $role . '"';
+        }
 
-        return $params;
+        $solrParams['fl'][] = 'PID';
+        $solrParams['fq']   = implode(' ', $solrParams['fq']);
+        $solrParams['sort'] = variable_get('islandora_solr_object_label_field', 'fgs_label_s') . ' asc';
+
+        return $solrParams;
     }
 
     /**
