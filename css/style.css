@@ -23,7 +23,7 @@ body.page-islandora h1 {
 }
 
 .collection-navigation-prev-next a {
-    text-decoration: none;
+    text-decoration: none!important;
 }
 
 .collection-navigation-prev-next a.Previous:before {
@@ -32,7 +32,7 @@ body.page-islandora h1 {
     font-size: 27px;
     vertical-align: top;
     content: "\f191";
-    text-decoration: none;
+    text-decoration: none!important;
 }
 
 .collection-navigation-prev-next span.Previous:before {
@@ -50,7 +50,7 @@ body.page-islandora h1 {
     font-size: 27px;
     vertical-align: top;
     content: "\f152";
-    text-decoration: none;
+    text-decoration: none!important;
 }
 
 .collection-navigation-prev-next span.Next:after {
@@ -64,10 +64,10 @@ body.page-islandora h1 {
 
 .collection-navigation-prev-next a.Next:hover:after {
     font-weight: 600;
-    text-decoration: none;
+    text-decoration: none!important;
 }
 
 .collection-navigation-prev-next a.Previous:hover:before {
     font-weight: 600;
-    text-decoration: none;
+    text-decoration: none!important;
 }
