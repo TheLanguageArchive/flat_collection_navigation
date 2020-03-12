@@ -238,9 +238,8 @@ class NavigationLinksGenerator
     public function generateLink(string $label, $pid = false): string
     {
         if ($pid) {
-            return l('', 'islandora/object/' . $pid, array('attributes' =>array('class'=>$label, 'title'=> $label . " item in the collection")));
-            }
-        else {
+            return l('', 'islandora/object/' . $pid, ['attributes' => ['class' => $label, 'title' => $label . ' item in the collection']]);
+        } else {
             return '<span class="' . $label . '"></span>';
         }
     }
