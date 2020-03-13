@@ -11,8 +11,7 @@ function flat_collection_navigation_preprocess_page(&$variables) {
 
     // arg(3) === null means we are on the view page
     // if (arg(0) === 'islandora' && arg(3) === null) {
-    if (arg(0) === 'islandora') {
-
+    if (arg(0) === 'islandora' && drupal_get_http_header('status') !== '403 Forbidden') {
 
         module_load_include('inc', 'flat_collection_navigation', 'includes/NavigationLinksGenerator');
 
@@ -26,10 +25,9 @@ function flat_collection_navigation_preprocess_page(&$variables) {
             }
 
             $variables['title_suffix']['#markup'] = '<div class="collection-navigation-prev-next">' . implode(' ', $navigationLinks) . '</div><div class="after-header"></div>' . $variables['title_suffix']['#markup'];
-        }
 
-        else {
-                $variables['title_suffix']['#markup'] = '<div class="collection-navigation-prev-next"></div><div class="after-header"></div>';
+        } else {
+            $variables['title_suffix']['#markup'] = '<div class="collection-navigation-prev-next"></div><div class="after-header"></div>';
         }
     }
 }
