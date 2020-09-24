@@ -143,18 +143,39 @@ class NavigationLinksGenerator
 
                 '-RELS_EXT_isConstituentOf_uri_mt:[* TO *]',
                 'AND',
-                '(RELS_EXT_isViewableByUser_literal_ms:"' . $user->name . '"',
-                'OR',
-                '((*:* -RELS_EXT_isViewableByUser_literal_ms:[* TO *]) AND (*:* -RELS_EXT_isViewableByRole_literal_ms:[* TO *]))',
-
             ],
         ];
 
+        $fqExt = format_string('
+
+        (
+            RELS_EXT_isViewableByUser_literal_ms:"!username"
+            OR
+            ((*:* -RELS_EXT_isViewableByUser_literal_ms:[* TO *]) AND (*:* -RELS_EXT_isViewableByRole_literal_ms:[* TO *]))
+
+        ', ['!username' => $user->name]);
+
         foreach ($user->roles as $role) {
-            $solrParams['fq'][] = 'OR RELS_EXT_isViewableByRole_literal_ms:"' . $role . '"';
+            $fqExt .= ' OR RELS_EXT_isViewableByRole_literal_ms:"' . $role . '" ';
         }
 
-        $solrParams['fq'][] = ')';
+        $fqExt .= ')';
+
+        $fqInt = format_string('
+
+            (
+                RELS_INT_isViewableByUser_literal_ms:"!username"
+                OR
+                ((*:* -RELS_INT_isViewableByUser_literal_ms:[* TO *]) AND (*:* -RELS_INT_isViewableByRole_literal_ms:[* TO *]))
+
+        ', ['!username' => $user->name]);
+
+        foreach ($user->roles as $role) {
+            $fqInt .= ' OR RELS_INT_isViewableByRole_literal_ms:"' . $role . '" ';
+        }
+
+        $fqInt             .= ')';
+        $solrParams['fq'][] = '(' . $fqExt . ' OR ' . $fqInt . ')';
 
         // Restrict results based on specified namespaces.
         $namespace_list = trim(variable_get('islandora_solr_namespace_restriction', ''));
